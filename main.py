@@ -3,8 +3,8 @@ import logging
 import os
 from pathlib import Path
 import subprocess
-
-
+from dotenv import load_dotenv
+load_dotenv()
 ROOT_DIR = os.getcwd()
 logging.basicConfig(level=logging.INFO)
 
@@ -37,7 +37,7 @@ def main(cfg):
     logging.info(f"Best Code Path Overall: {best_code_path_overall}")
     
     # Run validation and redirect stdout to a file "best_code_overall_stdout.txt"
-    with open(f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/gpt.py", 'w') as file:
+    with open(f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/gpt.py", 'w', encoding='utf-8') as file:
         file.writelines(best_code_overall + '\n')
     test_script = f"{ROOT_DIR}/problems/{cfg.problem.problem_name}/eval.py"
     test_script_stdout = "best_code_overall_val_stdout.txt"

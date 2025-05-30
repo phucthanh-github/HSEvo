@@ -86,7 +86,7 @@ class Problem:
         runid = hash(code)
         # Write response to file
         file_name = outdir+f"problem_eval{runid}.txt" if file_name is None else file_name + ".txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', encoding='utf-8') as file:
             file.writelines(code + '\n')
 
         # Extract code and description from response

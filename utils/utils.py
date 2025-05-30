@@ -82,7 +82,6 @@ def multi_chat_completion(messages_list: list[list[dict]], n, model, temperature
 
     num_workers = os.cpu_count()
     if "gpt" not in model:
-        # Transform messages if n > 1
         messages_list *= n
         n = 1
         num_workers = 2
@@ -94,28 +93,30 @@ def multi_chat_completion(messages_list: list[list[dict]], n, model, temperature
     contents: list[str] = []
     for choice in choices:
         for c in choice:
-            contents.append(c.message.content)
+            contents.append(c.message["content"])
     return contents
-
 
 def chat_completion(n: int, messages: list[dict], model: str, temperature: float) -> list[dict]:
     """
-    Generate n responses using OpenAI Chat Completions API
+    Generate n responses using LiteLLM Completion API (OpenRouter)
     """
-
     for attempt in range(30):
         try:
-            response_cur = completion(model=model, messages=messages, temperature=temperature, n=n)
+            response_cur = completion(
+                model="openrouter/mistralai/mistral-7b-instruct",                      
+                messages=messages,
+                temperature=temperature,
+                n=n
+            )
             break
         except Exception as e:
             logging.info(f"Attempt {attempt + 1} failed with error: {e}")
             time.sleep(3)
-    if response_cur is None:
+    else:
         logging.info("Code terminated due to too many failed attempts!")
         exit()
 
     return response_cur.choices
-
 
 def extract_code_from_generator(content):
     """Extract code from the response of the code generator."""

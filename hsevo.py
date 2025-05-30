@@ -97,14 +97,27 @@ class HSEvo:
         self.init_population()
 
     def cal_usage_LLM(self, lst_prompt, lst_completion, encoding_name="cl100k_base"):
-        """Returns the number of tokens in a text string."""
         encoding = tiktoken.get_encoding(encoding_name)
+
         for i in range(len(lst_prompt)):
+            # Tính token cho prompt
             for message in lst_prompt[i]:
                 for key, value in message.items():
-                    self.prompt_tokens += len(encoding.encode(value))
+                    if value is not None:
+                        self.prompt_tokens += len(encoding.encode(value))
 
-            self.completion_tokens += len(encoding.encode(lst_completion[i]))
+            # Kiểm tra xem lst_completion có phần tử thứ i không
+            if i < len(lst_completion):
+                completion_text = lst_completion[i]
+                if completion_text is not None and isinstance(completion_text, str) and len(completion_text) > 0:
+                    try:
+                        self.completion_tokens += len(encoding.encode(completion_text))
+                    except Exception as e:
+                        logging.warning(f"Failed to encode completion at index {i}: {e}")
+                else:
+                    logging.warning(f"Completion text at index {i} is empty or invalid: {completion_text}")
+            else:
+                logging.warning(f"lst_completion has no element at index {i} (length={len(lst_completion)})")
 
     def init_population(self) -> None:
         # Evaluate the seed function, and set it as Elite
@@ -175,7 +188,7 @@ class HSEvo:
         """
         # Write response to file
         file_name = f"problem_iter{self.iteration}_response{response_id}.txt" if file_name is None else file_name + ".txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', encoding='utf-8') as file:
             file.writelines(response + '\n')
 
         code = extract_code_from_generator(response)
@@ -646,8 +659,13 @@ class HSEvo:
         parameter_ranges, func_block = extract_to_hs(responses[0])
         if parameter_ranges is None or func_block is None:
             return None
-        bounds = [value for value in parameter_ranges.values()]
-
+        bounds = []
+        for key, value in parameter_ranges.items():
+            if isinstance(value, (tuple, list)) and len(value) == 2:
+                bounds.append(tuple(value))
+            else:
+                logging.warning(f"Parameter '{key}' has invalid range format: {value}. Skipping.")
+                
         harmony_memory = self.initialize_harmony_memory(bounds)
         population_hs = self.create_population_hs(func_block, parameter_ranges, harmony_memory)
 
