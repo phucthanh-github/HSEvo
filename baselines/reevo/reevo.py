@@ -147,7 +147,7 @@ class ReEvo:
         """
         # Write response to file
         file_name = f"problem_iter{self.iteration}_response{response_id}.txt" if file_name is None else file_name + ".txt"
-        with open(file_name, 'w') as file:
+        with open(file_name, 'w', encoding="utf-8") as file:
             file.writelines(response + '\n')
 
         code = extract_code_from_generator(response)

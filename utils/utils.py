@@ -5,7 +5,7 @@ import concurrent.futures
 import time
 import re
 import inspect
-
+import litellm
 
 def file_to_string(filename):
     with open(filename, 'r') as file:
